@@ -1,0 +1,19 @@
+//go:build v1
+package v1
+
+import (
+	"net/http"
+	"testing"
+)
+
+func TestServer(t *testing.T) {
+	var s Server
+	//http.ListenAndServe(":8080", s)
+	
+	http.ListenAndServeTLS(":4000", "cret file", "key file", s)
+	
+	// 当前 s 不存在具体实现类
+	s = &HttpServer{}
+	s.Start(":8081")  
+}
+
