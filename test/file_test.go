@@ -1,7 +1,8 @@
-package web
+package test
 
 import (
 	"bytes"
+	"github.com/Ai-feier/geek-web"
 	"html/template"
 	"mime/multipart"
 	"path"
@@ -9,8 +10,8 @@ import (
 )
 
 func TestFileUploader_Handle(t *testing.T) {
-	s := NewHTTPServer()
-	s.GET("/upload_page", func(ctx *Context) {
+	s := web.NewHTTPServer()
+	s.GET("/upload_page", func(ctx *web.Context) {
 		tpl := template.New("upload")
 		tpl, err := tpl.Parse(`
 <html>
@@ -31,7 +32,7 @@ func TestFileUploader_Handle(t *testing.T) {
 		ctx.RespData = page.Bytes()
 	})
 	
-	s.POST("/upload", (&FileUploader{
+	s.POST("/upload", (&web.FileUploader{
 		FileField:   "myfile",
 		DstPathFunc: func(fh *multipart.FileHeader) string {
 			return path.Join("testdata", "upload", fh.Filename)
@@ -42,8 +43,8 @@ func TestFileUploader_Handle(t *testing.T) {
 }
 
 func TestFileDownload_Handle(t *testing.T) {
-	s := NewHTTPServer()
-	fd := &FileDownloader{
+	s := web.NewHTTPServer()
+	fd := &web.FileDownloader{
 		Dir: "./testdata/download",
 	}
 	s.GET("/download", fd.Handle())
@@ -51,8 +52,8 @@ func TestFileDownload_Handle(t *testing.T) {
 }
 
 func TestStaticResourceHandler_Handle(t *testing.T) {
-	s := NewHTTPServer()
-	handler := NewStaticResourceHandler("./testdata/img", "/img")
+	s := web.NewHTTPServer()
+	handler := web.NewStaticResourceHandler("./testdata/img", "/img")
 	s.GET("/img/:file", handler.Handle)
 	s.Start(":8081")
 }

@@ -1,4 +1,4 @@
-package web_test
+package test_test
 
 import (
 	web "github.com/Ai-feier/geek-web/v8"

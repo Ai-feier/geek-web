@@ -1,7 +1,8 @@
-package web
+package test
 
 import (
 	"fmt"
+	"github.com/Ai-feier/geek-web"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"reflect"
@@ -73,51 +74,51 @@ func Test_router_AddRoute(t *testing.T){
 		},
 	}
 
-	mockHandler := func(ctx *Context) {}
-	r := newRouter()
+	mockHandler := func(ctx *web.Context) {}
+	r := web.newRouter()
 	for _, tr := range testRoutes {
 		r.addRoute(tr.method, tr.path, mockHandler)
 	}
 
-	wantRouter := &router{
-		trees: map[string]*node{
+	wantRouter := &web.router{
+		trees: map[string]*web.node{
 			http.MethodGet: {
 				path: "/",
-				children: map[string]*node{
-					"user": {path: "user", children: map[string]*node{
+				children: map[string]*web.node{
+					"user": {path: "user", children: map[string]*web.node{
 						"home": {path: "home", handler: mockHandler},
 					}, handler: mockHandler},
-					"order": {path: "order", children: map[string]*node{
+					"order": {path: "order", children: map[string]*web.node{
 						"detail": {path: "detail", handler: mockHandler},
-					}, starChild: &node{path: "*", handler: mockHandler}},
+					}, starChild: &web.node{path: "*", handler: mockHandler}},
 					"param": {
 						path: "param",
-						paramChild: &node{
+						paramChild: &web.node{
 							path: ":id",
-							starChild: &node{
+							starChild: &web.node{
 								path: "*",
 								handler: mockHandler,
 							},
-							children: map[string]*node{
+							children: map[string]*web.node{
 								"detail": {path: "detail", handler: mockHandler},
 							},
 							handler: mockHandler,
 						},
 					},
 				},
-				starChild:&node{
+				starChild:&web.node{
 					path: "*",
-					children: map[string]*node{
+					children: map[string]*web.node{
 						"abc": {
 							path: "abc",
-							starChild: &node{path: "*", handler: mockHandler},
+							starChild: &web.node{path: "*", handler: mockHandler},
 							handler: mockHandler},
 					},
-					starChild: &node{path: "*", handler: mockHandler},
+					starChild: &web.node{path: "*", handler: mockHandler},
 					handler: mockHandler},
 				handler: mockHandler},
-			http.MethodPost: { path: "/", children: map[string]*node{
-				"order": {path: "order", children: map[string]*node{
+			http.MethodPost: { path: "/", children: map[string]*web.node{
+				"order": {path: "order", children: map[string]*web.node{
 					"create": {path: "create", handler: mockHandler},
 				}},
 				"login": {path: "login", handler: mockHandler},
@@ -129,7 +130,7 @@ func Test_router_AddRoute(t *testing.T){
 	assert.True(t, ok, msg)
 
 	// 非法用例
-	r = newRouter()
+	r = web.newRouter()
 
 	// 空字符串
 	assert.PanicsWithValue(t, "web: 路由是空字符串", func() {
@@ -176,12 +177,12 @@ func Test_router_AddRoute(t *testing.T){
 		r.addRoute(http.MethodGet, "/a/b/*", mockHandler)
 	})
 
-	r = newRouter()
+	r = web.newRouter()
 	assert.PanicsWithValue(t, "web: 非法路由，已有通配符路由。不允许同时注册通配符路由和参数路由 [:id]", func() {
 		r.addRoute(http.MethodGet, "/*", mockHandler)
 		r.addRoute(http.MethodGet, "/:id", mockHandler)
 	})
-	r = newRouter()
+	r = web.newRouter()
 	assert.PanicsWithValue(t, "web: 非法路由，已有路径参数路由。不允许同时注册通配符路由和参数路由 [*]", func() {
 		r.addRoute(http.MethodGet, "/:id", mockHandler)
 		r.addRoute(http.MethodGet, "/*", mockHandler)
@@ -234,9 +235,9 @@ func Test_router_findRouter(t *testing.T){
 		},
 	}
 	
-	mockHandler := func(ctx *Context) {}
+	mockHandler := func(ctx *web.Context) {}
 	
-	r := newRouter()
+	r := web.newRouter()
 	for _, tr := range testRoutes {
 		r.addRoute(tr.method, tr.path, mockHandler)
 	}
@@ -246,7 +247,7 @@ func Test_router_findRouter(t *testing.T){
 		method string
 		path string
 		found bool
-		mi *matchInfo
+		mi *web.matchInfo
 	}{
 		{
 			name: "method not found",
@@ -262,8 +263,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodGet,
 			path: "/",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: "/",
 					handler: mockHandler,
 				},
@@ -274,8 +275,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodGet,
 			path: "/user",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: "user",
 					handler: mockHandler,
 				},
@@ -286,8 +287,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodPost,
 			path: "/order",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: "order",
 				},
 			},
@@ -297,8 +298,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodPost,
 			path: "/order/create",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: "create",
 					handler: mockHandler,
 				},
@@ -311,8 +312,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodPost,
 			path: "/order/delete",
 			found: true,
-			mi: &matchInfo{
-				n:  &node{
+			mi: &web.matchInfo{
+				n:  &web.node{
 					path: "*",
 					handler: mockHandler,
 				},
@@ -325,8 +326,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodGet,
 			path: "/user/Tom/home",
 			found: true,
-			mi: &matchInfo{
-				n:&node{
+			mi: &web.matchInfo{
+				n:&web.node{
 					path: "home",
 					handler: mockHandler,
 				},
@@ -345,8 +346,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodGet,
 			path: "/param/123",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: ":id",
 					handler: mockHandler,
 				},
@@ -359,8 +360,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodGet,
 			path: "/param/123/abc",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: "*",
 					handler: mockHandler,
 				},
@@ -374,8 +375,8 @@ func Test_router_findRouter(t *testing.T){
 			method: http.MethodGet,
 			path: "/param/123/detail",
 			found: true,
-			mi: &matchInfo{
-				n: &node{
+			mi: &web.matchInfo{
+				n: &web.node{
 					path: "detail",
 					handler: mockHandler,
 				},
@@ -399,7 +400,7 @@ func Test_router_findRouter(t *testing.T){
 	}
 }
 
-func (r *router) equal(y router) (string, bool) {
+func (r *web.router) equal(y web.router) (string, bool) {
 	for k, v := range r.trees {
 		yv, ok := y.trees[k]
 		if !ok {
@@ -413,7 +414,7 @@ func (r *router) equal(y router) (string, bool) {
 	return "", true
 }
 
-func (n *node) equal(y *node) (string, bool) {
+func (n *web.node) equal(y *web.node) (string, bool) {
 	if y == nil {
 		return "目标节点为 nil", false
 	}
