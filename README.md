@@ -3,7 +3,7 @@
 ![工作流程](./img/geek-web.png)
 
 设计参照项目如下：
-    - gin
-    - beego
-    - echo
-    - iris
+- gin
+- beego
+- echo
+- iris
